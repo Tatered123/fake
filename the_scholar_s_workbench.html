@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Scholar's Workbench</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Newsreader (Editorial Serif) & Inter (Clean Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Newsreader', 'Georgia', 'serif'],
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        nyt: {
+                            bg: '#FAF9f6',
+                            card: '#FFFFFF',
+                            border: '#E2E0D8',
+                            darkBorder: '#121212',
+                            text: '#121212',
+                            muted: '#5A5A5A',
+                            accent: '#2F4F4F',
+                            highlight: '#F0EFEA'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FAF9F6;
+            color: #121212;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* NYT Editorial Rules & Lines */
+        .nyt-double-border {
+            border-top: 3px double #121212;
+            border-bottom: 1px solid #121212;
+        }
+        
+        .nyt-box-shadow {
+            box-shadow: 3px 3px 0px #121212;
+        }
+
+        /* 3D Card Flip Animation */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        /* Custom Toast Notification */
+        #toast {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-nyt-text selection:bg-neutral-800 selection:text-white">
+
+    <!-- Editorial Header / Masthead -->
+    <header class="max-w-7xl mx-auto w-full px-4 pt-6 pb-4">
+        <div class="flex flex-col sm:flex-row justify-between items-center text-xs font-semibold tracking-wider text-nyt-muted border-b border-nyt-border pb-2 mb-3 gap-2">
+            <span id="current-date">SUNDAY, SEPTEMBER 27, 2026</span>
+            <span class="hidden sm:inline">THE DAILY ACADEMIC COMPANION</span>
+            <span>EDITION NO. 42</span>
+        </div>
+
+        <div class="text-center my-4">
+            <h1 class="font-serif text-4xl sm:text-6xl font-bold tracking-tight text-nyt-text uppercase decoration-1">
+                The Scholar's Workbench
+            </h1>
+            <p class="font-serif italic text-base sm:text-lg text-nyt-muted mt-1">
+                Essential utilities for research, active recall, and focused inquiry.
+            </p>
+        </div>
+
+        <!-- Navigation Tabs / Quick Anchors -->
+        <nav class="nyt-double-border py-2 mt-4 flex flex-wrap justify-center items-center gap-2 sm:gap-8 text-xs font-bold tracking-widest uppercase">
+            <button onclick="switchTab('all')" id="tab-all" class="px-3 py-1 bg-nyt-text text-white rounded-none transition">All Tools</button>
+            <button onclick="switchTab('citation')" id="tab-citation" class="px-3 py-1 hover:bg-nyt-highlight text-nyt-text transition">01. Citation Studio</button>
+            <button onclick="switchTab('flashcards')" id="tab-flashcards" class="px-3 py-1 hover:bg-nyt-highlight text-nyt-text transition">02. Active Recall</button>
+            <button onclick="switchTab('focus')" id="tab-focus" class="px-3 py-1 hover:bg-nyt-highlight text-nyt-text transition">03. Focus & Audio</button>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto w-full px-4 py-6 flex-grow space-y-12">
+
+        <!-- TOOL 1: CITATION STUDIO -->
+        <section id="section-citation" class="tool-section bg-nyt-card border border-nyt-darkBorder p-6 sm:p-8 nyt-box-shadow transition-all">
+            <div class="border-b border-nyt-darkBorder pb-4 mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <div class="text-xs font-bold tracking-widest uppercase text-nyt-muted">SECTION I</div>
+                    <h2 class="font-serif text-2xl sm:text-3xl font-bold">Citation Studio</h2>
+                    <p class="text-xs sm:text-sm text-nyt-muted mt-1">Generate polished, accurate academic citations instantly. Format and export your reference list.</p>
+                </div>
+                
+                <!-- Format Switcher -->
+                <div class="flex flex-wrap items-center gap-1 bg-nyt-highlight p-1 border border-nyt-border text-xs font-semibold">
+                    <button onclick="setCitationStyle('apa')" id="style-apa" class="px-3 py-1.5 bg-nyt-text text-white">APA 7</button>
+                    <button onclick="setCitationStyle('mla')" id="style-mla" class="px-3 py-1.5 hover:bg-white text-nyt-text">MLA 9</button>
+                    <button onclick="setCitationStyle('chicago')" id="style-chicago" class="px-3 py-1.5 hover:bg-white text-nyt-text">Chicago 17</button>
+                    <button onclick="setCitationStyle('harvard')" id="style-harvard" class="px-3 py-1.5 hover:bg-white text-nyt-text">Harvard</button>
+                </div>
+            </div>
+
+            <!-- Citation Input Form -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="flex items-center gap-4 text-xs font-bold uppercase tracking-wider mb-2">
+                        <label class="cursor-pointer flex items-center gap-1.5">
+                            <input type="radio" name="sourceType" value="website" checked onchange="updateCitationFields()" class="accent-black">
+                            <span>Webpage</span>
+                        </label>
+                        <label class="cursor-pointer flex items-center gap-1.5">
+                            <input type="radio" name="sourceType" value="book" onchange="updateCitationFields()" class="accent-black">
+                            <span>Book</span>
+                        </label>
+                        <label class="cursor-pointer flex items-center gap-1.5">
+                            <input type="radio" name="sourceType" value="journal" onchange="updateCitationFields()" class="accent-black">
+                            <span>Journal Article</span>
+                        </label>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div>
+                            <label class="block font-bold text-nyt-muted uppercase tracking-wider mb-1">Author First Name / Initials</label>
+                            <input type="text" id="cite-author-first" placeholder="e.g. Jane" oninput="generateLiveCitation()" class="w-full p-2.5 border border-nyt-border focus:border-nyt-darkBorder focus:outline-none bg-nyt-bg">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-nyt-muted uppercase tracking-wider mb-1">Author Last Name</label>
+                            <input type="text" id="cite-author-last" placeholder="e.g. Austen" oninput="generateLiveCitation()" class="w-full p-2.5 border border-nyt-border focus:border-nyt-darkBorder focus:outline-none bg-nyt-bg">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-nyt-muted uppercase tracking-wider mb-1">Source Title / Article Title</label>
+                        <input type="text" id="cite-title" placeholder="e.g. Pride and Prejudice" oninput="generateLiveCitation()" class="w-full p-2.5 text-xs border border-nyt-border focus:border-nyt-darkBorder focus:outline-none bg-nyt-bg">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div id="container-field">
+                            <label id="container-label" class="block font-bold text-nyt-muted uppercase tracking-wider mb-1">Website / Publisher Name</label>
+                            <input type="text" id="cite-container" placeholder="e.g. T. Egerton" oninput="generateLiveCitation()" class="w-full p-2.5 border border-nyt-border focus:border-nyt-darkBorder focus:outline-none bg-nyt-bg">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-nyt-muted uppercase tracking-wider mb-1">Year of Publication</label>
+                            <input type="text" id="cite-year" placeholder="e.g. 1813" oninput="generateLiveCitation()" class="w-full p-2.5 border border-nyt-border focus:border-nyt-darkBorder focus:outline-none bg-nyt-bg">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div>
+                            <label class="block font-bold text-nyt-muted uppercase tracking-wider mb-1">URL or DOI (Optional)</label>
+                            <input type="text" id="cite-url" placeholder="https://..." oninput="generateLiveCitation()" class="w-full p-2.5 border border-nyt-border focus:border-nyt-darkBorder focus:outline-none bg-nyt-bg">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-nyt-muted uppercase tracking-wider mb-1">Date Accessed</label>
+                            <input type="text" id="cite-access-date" placeholder="e.g. 27 Sep 2026" oninput="generateLiveCitation()" class="w-full p-2.5 border border-nyt-border focus:border-nyt-darkBorder focus:outline-none bg-nyt-bg">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Citation Preview & List Output -->
+                <div class="lg:col-span-5 flex flex-col justify-between bg-nyt-highlight p-5 border border-nyt-border">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xs font-bold uppercase tracking-wider text-nyt-muted">Formatted Citation Preview</span>
+                            <span id="current-style-tag" class="text-[10px] font-mono uppercase bg-nyt-text text-white px-2 py-0.5">APA 7</span>
+                        </div>
+
+                        <div id="citation-preview" class="font-serif text-base p-4 bg-white border border-nyt-border min-h-[100px] leading-relaxed break-words">
+                            <em>Author, A.</em> (Year). <em>Title of entry</em>. Source.
+                        </div>
+
+                        <div class="mt-4 flex gap-2">
+                            <button onclick="copySingleCitation()" class="flex-1 py-2 bg-nyt-text hover:bg-neutral-800 text-white text-xs font-bold uppercase tracking-wider transition">
+                                <i class="fa-regular fa-copy mr-1"></i> Copy Citation
+                            </button>
+                            <button onclick="addToList()" class="flex-1 py-2 bg-white hover:bg-neutral-100 text-nyt-text border border-nyt-darkBorder text-xs font-bold uppercase tracking-wider transition">
+                                <i class="fa-solid fa-plus mr-1"></i> Add To List
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bibliography List -->
+                    <div class="mt-6 pt-4 border-t border-nyt-border">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider">Works Cited List (<span id="list-count">0</span>)</span>
+                            <button onclick="clearCitationList()" class="text-[11px] text-red-700 hover:underline">Clear All</button>
+                        </div>
+                        
+                        <div id="bibliography-list" class="space-y-2 max-h-[160px] overflow-y-auto pr-1 text-xs font-serif">
+                            <p class="text-nyt-muted italic text-xs">No citations added to your bibliography yet.</p>
+                        </div>
+
+                        <button onclick="exportBibliography()" class="w-full mt-3 py-2 border border-nyt-darkBorder bg-white hover:bg-neutral-100 text-xs font-bold uppercase tracking-wider">
+                            <i class="fa-solid fa-file-export mr-1"></i> Copy Entire Bibliography
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TOOL 2: ACTIVE RECALL FLASHCARDS -->
+        <section id="section-flashcards" class="tool-section bg-nyt-card border border-nyt-darkBorder p-6 sm:p-8 nyt-box-shadow transition-all">
+            <div class="border-b border-nyt-darkBorder pb-4 mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <div class="text-xs font-bold tracking-widest uppercase text-nyt-muted">SECTION II</div>
+                    <h2 class="font-serif text-2xl sm:text-3xl font-bold">Active Recall Deck</h2>
+                    <p class="text-xs sm:text-sm text-nyt-muted mt-1">Test your conceptual retention. Rate card difficulty to track progress.</p>
+                </div>
+
+                <!-- Deck Selector & Creator -->
+                <div class="flex items-center gap-2">
+                    <select id="deck-select" onchange="changeDeck()" class="p-2 border border-nyt-border bg-nyt-bg text-xs font-bold focus:outline-none">
+                        <option value="latin">Deck: Academic Latin Terms</option>
+                        <option value="logic">Deck: Fallacies & Logic</option>
+                        <option value="custom">Deck: Custom Notes</option>
+                    </select>
+                    <button onclick="toggleCardCreator()" class="p-2 border border-nyt-darkBorder bg-nyt-text text-white hover:bg-neutral-800 text-xs font-bold uppercase tracking-wider">
+                        <i class="fa-solid fa-plus"></i> New Card
+                    </button>
+                </div>
+            </div>
+
+            <!-- Custom Card Creator Drawer (Hidden by default) -->
+            <div id="card-creator" class="hidden mb-6 p-4 bg-nyt-highlight border border-nyt-border">
+                <h3 class="text-xs font-bold uppercase tracking-wider mb-3">Add Custom Flashcard</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-3">
+                    <textarea id="new-card-front" placeholder="Front Side (Prompt / Term / Question)" class="p-2 border border-nyt-border h-20 focus:outline-none bg-white"></textarea>
+                    <textarea id="new-card-back" placeholder="Back Side (Definition / Answer / Explanation)" class="p-2 border border-nyt-border h-20 focus:outline-none bg-white"></textarea>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button onclick="toggleCardCreator()" class="px-3 py-1 text-xs border border-nyt-border bg-white">Cancel</button>
+                    <button onclick="saveCustomCard()" class="px-4 py-1 text-xs font-bold bg-nyt-text text-white">Save Card</button>
+                </div>
+            </div>
+
+            <!-- Interactive Flashcard Stage -->
+            <div class="max-w-xl mx-auto my-4">
+                <!-- Progress Indicator -->
+                <div class="flex justify-between items-center text-xs font-mono mb-2 text-nyt-muted">
+                    <span id="card-counter">CARD 1 OF 5</span>
+                    <span id="mastery-score">MASTERY: 0%</span>
+                </div>
+
+                <!-- The 3D Card Container -->
+                <div onclick="flipCard()" class="perspective-1000 w-full h-64 sm:h-72 cursor-pointer group">
+                    <div id="flashcard-inner" class="relative w-full h-full duration-500 transform-style-3d border-2 border-nyt-darkBorder bg-white shadow-sm p-6 sm:p-8 flex flex-col justify-between">
+                        
+                        <!-- Front Face -->
+                        <div class="absolute inset-0 backface-hidden p-6 sm:p-8 flex flex-col justify-between bg-white">
+                            <div class="flex justify-between items-center text-[10px] font-bold tracking-widest text-nyt-muted uppercase">
+                                <span>PROMPT</span>
+                                <span><i class="fa-solid fa-rotate mr-1"></i> CLICK TO REVEAL</span>
+                            </div>
+                            <div class="my-auto text-center">
+                                <h3 id="card-front-text" class="font-serif text-2xl sm:text-3xl font-bold leading-snug">
+                                    Prima Facie
+                                </h3>
+                            </div>
+                            <div class="text-center text-xs text-nyt-muted italic font-serif">
+                                Touch or click card to flip
+                            </div>
+                        </div>
+
+                        <!-- Back Face -->
+                        <div class="absolute inset-0 backface-hidden rotate-y-180 p-6 sm:p-8 flex flex-col justify-between bg-nyt-bg border-2 border-nyt-darkBorder">
+                            <div class="flex justify-between items-center text-[10px] font-bold tracking-widest text-nyt-muted uppercase">
+                                <span>EXPLANATION</span>
+                                <span>ANSWER</span>
+                            </div>
+                            <div class="my-auto text-center">
+                                <p id="card-back-text" class="font-serif text-lg sm:text-xl leading-relaxed text-neutral-800">
+                                    Based on the first impression; accepted as correct until proven otherwise.
+                                </p>
+                            </div>
+                            <div class="text-center text-xs font-mono text-nyt-muted uppercase">
+                                Self Assessment Below
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Card Controls & Rating Buttons -->
+                <div class="mt-6 flex flex-wrap justify-between items-center gap-3">
+                    <button onclick="prevCard()" class="px-4 py-2 border border-nyt-darkBorder bg-white hover:bg-neutral-100 text-xs font-bold uppercase tracking-wider">
+                        <i class="fa-solid fa-arrow-left mr-1"></i> Prev
+                    </button>
+
+                    <!-- Retention Rating Buttons -->
+                    <div class="flex items-center gap-2">
+                        <button onclick="rateCard('hard')" class="px-3 py-2 bg-red-50 text-red-900 border border-red-200 hover:bg-red-100 text-xs font-bold uppercase tracking-wider">
+                            Hard
+                        </button>
+                        <button onclick="rateCard('good')" class="px-3 py-2 bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 text-xs font-bold uppercase tracking-wider">
+                            Good
+                        </button>
+                        <button onclick="rateCard('easy')" class="px-3 py-2 bg-emerald-50 text-emerald-900 border border-emerald-200 hover:bg-emerald-100 text-xs font-bold uppercase tracking-wider">
+                            Easy
+                        </button>
+                    </div>
+
+                    <button onclick="nextCard()" class="px-4 py-2 border border-nyt-darkBorder bg-white hover:bg-neutral-100 text-xs font-bold uppercase tracking-wider">
+                        Next <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TOOL 3: FOCUS DESK & AUDIO SYNTHESIZER -->
+        <section id="section-focus" class="tool-section bg-nyt-card border border-nyt-darkBorder p-6 sm:p-8 nyt-box-shadow transition-all">
+            <div class="border-b border-nyt-darkBorder pb-4 mb-6">
+                <div class="text-xs font-bold tracking-widest uppercase text-nyt-muted">SECTION III</div>
+                <h2 class="font-serif text-2xl sm:text-3xl font-bold">Focus Desk & Synth</h2>
+                <p class="text-xs sm:text-sm text-nyt-muted mt-1">Structured interval timer paired with built-in ambient audio generation.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Timer Panel -->
+                <div class="lg:col-span-6 bg-nyt-highlight p-6 border border-nyt-border flex flex-col items-center justify-center text-center">
+                    
+                    <div class="flex justify-center gap-2 mb-6 text-xs font-bold tracking-wider uppercase">
+                        <button onclick="setTimerMode('pomodoro')" id="mode-pomodoro" class="px-3 py-1.5 bg-nyt-text text-white">Work (25m)</button>
+                        <button onclick="setTimerMode('short')" id="mode-short" class="px-3 py-1.5 bg-white border border-nyt-border text-nyt-text">Short Break (5m)</button>
+                        <button onclick="setTimerMode('long')" id="mode-long" class="px-3 py-1.5 bg-white border border-nyt-border text-nyt-text">Long Break (15m)</button>
+                    </div>
+
+                    <!-- Digital Timer Display -->
+                    <div id="timer-display" class="font-mono text-6xl sm:text-7xl font-bold tracking-tighter my-2 text-nyt-darkBorder">
+                        25:00
+                    </div>
+
+                    <p id="timer-status" class="text-xs font-serif italic text-nyt-muted mb-6">Ready to enter deep work session.</p>
+
+                    <div class="flex gap-3 w-full max-w-xs">
+                        <button id="start-btn" onclick="toggleTimer()" class="flex-1 py-3 bg-nyt-text hover:bg-neutral-800 text-white text-xs font-bold uppercase tracking-widest transition">
+                            Start Timer
+                        </button>
+                        <button onclick="resetTimer()" class="px-4 py-3 bg-white border border-nyt-darkBorder hover:bg-neutral-100 text-xs font-bold uppercase tracking-widest transition">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ambient Audio Generator & Checklist -->
+                <div class="lg:col-span-6 space-y-6">
+                    
+                    <!-- Sound Generator (Web Audio API) -->
+                    <div class="border border-nyt-border p-5 bg-white">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-xs font-bold uppercase tracking-wider">
+                                <i class="fa-solid fa-headphones mr-1.5"></i> Ambient Sound Synthesizer
+                            </h3>
+                            <span class="text-[10px] text-nyt-muted font-mono">WEB AUDIO API</span>
+                        </div>
+
+                        <div class="space-y-4">
+                            <!-- Rain / Noise generator toggle -->
+                            <div class="flex items-center justify-between p-2.5 bg-nyt-bg border border-nyt-border">
+                                <div>
+                                    <div class="text-xs font-bold">Deep Brown Noise</div>
+                                    <div class="text-[11px] text-nyt-muted">Low-frequency acoustic dampening</div>
+                                </div>
+                                <button id="btn-sound-brown" onclick="toggleSound('brown')" class="px-3 py-1.5 bg-white border border-nyt-darkBorder text-xs font-bold uppercase hover:bg-neutral-100">
+                                    Play
+                                </button>
+                            </div>
+
+                            <!-- White noise generator toggle -->
+                            <div class="flex items-center justify-between p-2.5 bg-nyt-bg border border-nyt-border">
+                                <div>
+                                    <div class="text-xs font-bold">Soft Focus Tone</div>
+                                    <div class="text-[11px] text-nyt-muted">432Hz calming binaural wave</div>
+                                </div>
+                                <button id="btn-sound-tone" onclick="toggleSound('tone')" class="px-3 py-1.5 bg-white border border-nyt-darkBorder text-xs font-bold uppercase hover:bg-neutral-100">
+                                    Play
+                                </button>
+                            </div>
+
+                            <!-- Master Volume Control -->
+                            <div class="pt-2">
+                                <div class="flex justify-between text-xs font-bold text-nyt-muted mb-1">
+                                    <span>VOLUME CONTROL</span>
+                                    <span id="volume-val">50%</span>
+                                </div>
+                                <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" oninput="updateVolume(this.value)" class="w-full accent-black cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mini Agenda / Task Checklist -->
+                    <div class="border border-nyt-border p-5 bg-white">
+                        <h3 class="text-xs font-bold uppercase tracking-wider mb-3">Session Task Checklist</h3>
+                        <div class="flex gap-2 mb-3">
+                            <input type="text" id="task-input" placeholder="e.g. Read Chapter 4, Draft Abstract..." class="flex-1 p-2 text-xs border border-nyt-border focus:border-nyt-darkBorder focus:outline-none bg-nyt-bg">
+                            <button onclick="addTask()" class="px-3 py-2 bg-nyt-text text-white text-xs font-bold uppercase">Add</button>
+                        </div>
+                        <ul id="task-list" class="space-y-1.5 max-h-36 overflow-y-auto pr-1 text-xs">
+                            <!-- Tasks injected dynamically -->
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Editorial Footer -->
+    <footer class="max-w-7xl mx-auto w-full px-4 py-8 mt-12 border-t border-nyt-border text-center text-xs text-nyt-muted">
+        <div class="flex justify-center items-center gap-6 mb-3 font-serif italic">
+            <span>Precision Tools for Modern Scholars</span>
+            <span>•</span>
+            <span>No Ads</span>
+            <span>•</span>
+            <span>Offline Capable</span>
+        </div>
+        <p>© 2026 The Scholar's Workbench. Inspired by classic editorial design.</p>
+    </footer>
+
+    <!-- Floating Feedback Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-nyt-darkBorder text-white text-xs font-mono py-2.5 px-4 shadow-lg opacity-0 pointer-events-none translate-y-2 border border-white">
+        Message copied to clipboard.
+    </div>
+
+    <!-- JAVASCRIPT LOGIC SECTION -->
+    <script>
+
+        // Tab Switching Logic
+        function switchTab(tabName) {
+            const sections = document.querySelectorAll('.tool-section');
+            const buttons = ['tab-all', 'tab-citation', 'tab-flashcards', 'tab-focus'];
+            
+            // Reset button styles
+            buttons.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    btn.className = "px-3 py-1 hover:bg-nyt-highlight text-nyt-text transition";
+                }
+            });
+
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            if (activeBtn) {
+                activeBtn.className = "px-3 py-1 bg-nyt-text text-white rounded-none transition";
+            }
+
+            if (tabName === 'all') {
+                sections.forEach(sec => sec.classList.remove('hidden'));
+            } else {
+                sections.forEach(sec => sec.classList.add('hidden'));
+                const target = document.getElementById(`section-${tabName}`);
+                if (target) target.classList.remove('hidden');
+            }
+        }
+
+        // Toast Helper
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-2');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-2');
+            }, 2600);
+        }
+
+
+        // CITATION ENGINE STATE
+        let currentStyle = 'apa';
+        let savedBibliography = [];
+
+        function setCitationStyle(style) {
+            currentStyle = style;
+            const styles = ['apa', 'mla', 'chicago', 'harvard'];
+            styles.forEach(s => {
+                const btn = document.getElementById(`style-${s}`);
+                if (s === style) {
+                    btn.className = "px-3 py-1.5 bg-nyt-text text-white";
+                } else {
+                    btn.className = "px-3 py-1.5 hover:bg-white text-nyt-text";
+                }
+            });
+            document.getElementById('current-style-tag').innerText = style.toUpperCase();
+            generateLiveCitation();
+        }
+
+        function updateCitationFields() {
+            const type = document.querySelector('input[name="sourceType"]:checked').value;
+            const containerLabel = document.getElementById('container-label');
+            const containerInput = document.getElementById('cite-container');
+
+            if (type === 'website') {
+                containerLabel.innerText = "Website Name";
+                containerInput.placeholder = "e.g. Encyclopaedia Britannica";
+            } else if (type === 'book') {
+                containerLabel.innerText = "Publisher";
+                containerInput.placeholder = "e.g. Oxford University Press";
+            } else if (type === 'journal') {
+                containerLabel.innerText = "Journal Title & Volume";
+                containerInput.placeholder = "e.g. Nature, vol. 588";
+            }
+            generateLiveCitation();
+        }
+
+        function formatCitationText() {
+            const first = document.getElementById('cite-author-first').value.trim();
+            const last = document.getElementById('cite-author-last').value.trim();
+            const title = document.getElementById('cite-title').value.trim() || "Untitled Source";
+            const container = document.getElementById('cite-container').value.trim();
+            const year = document.getElementById('cite-year').value.trim() || "n.d.";
+            const url = document.getElementById('cite-url').value.trim();
+            const access = document.getElementById('cite-access-date').value.trim();
+
+            let authorFormatted = "";
+            if (last) {
+                if (first) {
+                    authorFormatted = currentStyle === 'apa' || currentStyle === 'harvard' 
+                        ? `${last}, ${first.charAt(0)}.` 
+                        : `${last}, ${first}.`;
+                } else {
+                    authorFormatted = last;
+                }
+            } else {
+                authorFormatted = "Anonymous";
+            }
+
+            let result = "";
+
+            if (currentStyle === 'apa') {
+                result = `${authorFormatted} (${year}). <em>${title}</em>. ${container ? container + '. ' : ''}${url}`;
+            } else if (currentStyle === 'mla') {
+                result = `${authorFormatted} "${title}." <em>${container || 'Web'}</em>, ${year}${url ? ', ' + url : ''}. Accessed ${access || '2026'}.`;
+            } else if (currentStyle === 'chicago') {
+                result = `${authorFormatted} "${title}." <em>${container || 'Source'}</em> (${year}). ${url}`;
+            } else if (currentStyle === 'harvard') {
+                result = `${authorFormatted} (${year}) <em>${title}</em>. ${container ? container + '. ' : ''}Available at: ${url || 'N/A'}.`;
+            }
+
+            return result;
+        }
+
+        function generateLiveCitation() {
+            const output = formatCitationText();
+            document.getElementById('citation-preview').innerHTML = output;
+        }
+
+        function copySingleCitation() {
+            const preview = document.getElementById('citation-preview');
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = preview.innerHTML;
+            const textToCopy = tempDiv.innerText || tempDiv.textContent;
+
+            copyToClipboardText(textToCopy);
+            showToast('Citation copied to clipboard');
+        }
+
+        function addToList() {
+            const previewHTML = document.getElementById('citation-preview').innerHTML;
+            savedBibliography.push(previewHTML);
+            renderBibliography();
+            showToast('Added to Bibliography list');
+        }
+
+        function renderBibliography() {
+            const listContainer = document.getElementById('bibliography-list');
+            const countEl = document.getElementById('list-count');
+            countEl.innerText = savedBibliography.length;
+
+            if (savedBibliography.length === 0) {
+                listContainer.innerHTML = '<p class="text-nyt-muted italic text-xs">No citations added to your bibliography yet.</p>';
+                return;
+            }
+
+            listContainer.innerHTML = savedBibliography.map((item, idx) => `
+                <div class="p-2 bg-white border border-nyt-border flex justify-between items-start gap-2">
+                    <div class="flex-1">${idx + 1}. ${item}</div>
+                    <button onclick="removeCitation(${idx})" class="text-red-700 hover:text-red-900 text-xs px-1">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function removeCitation(index) {
+            savedBibliography.splice(index, 1);
+            renderBibliography();
+        }
+
+        function clearCitationList() {
+            savedBibliography = [];
+            renderBibliography();
+            showToast('Bibliography cleared');
+        }
+
+        function exportBibliography() {
+            if (savedBibliography.length === 0) {
+                showToast('Bibliography is empty!');
+                return;
+            }
+            const fullText = savedBibliography.map((item, i) => {
+                const temp = document.createElement('div');
+                temp.innerHTML = item;
+                return `${i + 1}. ${temp.innerText}`;
+            }).join('\n\n');
+
+            copyToClipboardText(fullText);
+            showToast('Full bibliography copied!');
+        }
+
+        function copyToClipboardText(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+        }
+
+
+        // FLASHCARD ENGINE STATE
+        const DECKS = {
+            latin: [
+                { front: "Prima Facie", back: "Based on the first impression; accepted as correct until proven otherwise." },
+                { front: "Ad Hominem", back: "Attacking the character of an argument's source rather than the substance of the argument itself." },
+                { front: "Cogito, Ergo Sum", back: "'I think, therefore I am' — fundamental philosophical proposition by René Descartes." },
+                { front: "In Situ", back: "In its original place or natural position." },
+                { front: "Status Quo", back: "The existing state of affairs, particularly regarding social or political issues." }
+            ],
+            logic: [
+                { front: "Straw Man Fallacy", back: "Misrepresenting or exaggerating an opponent's argument to make it easier to attack." },
+                { front: "False Dilemma", back: "Falsely presenting two alternative states as the only possibilities when more exist." },
+                { front: "Confirmation Bias", back: "The tendency to search for, interpret, and recall information in a way that confirms prior beliefs." },
+                { front: "Occam's Razor", back: "The philosophical principle that the simplest explanation with the fewest assumptions is usually preferred." }
+            ],
+            custom: []
+        };
+
+        let currentDeckKey = 'latin';
+        let currentCardIndex = 0;
+        let isFlipped = false;
+        let ratings = {}; // Stores ratings per card front
+
+        function updateCardDisplay() {
+            const deck = DECKS[currentDeckKey];
+            const frontEl = document.getElementById('card-front-text');
+            const backEl = document.getElementById('card-back-text');
+            const counterEl = document.getElementById('card-counter');
+            const masteryEl = document.getElementById('mastery-score');
+
+            if (!deck || deck.length === 0) {
+                frontEl.innerText = "No cards in this deck";
+                backEl.innerText = "Use the 'New Card' button above to add custom flashcards.";
+                counterEl.innerText = "CARD 0 OF 0";
+                masteryEl.innerText = "MASTERY: N/A";
+                return;
+            }
+
+            // Ensure index is valid
+            if (currentCardIndex >= deck.length) currentCardIndex = 0;
+            if (currentCardIndex < 0) currentCardIndex = deck.length - 1;
+
+            const card = deck[currentCardIndex];
+            frontEl.innerText = card.front;
+            backEl.innerText = card.back;
+            counterEl.innerText = `CARD ${currentCardIndex + 1} OF ${deck.length}`;
+
+            // Calculate overall deck mastery
+            let totalMastered = 0;
+            deck.forEach(c => {
+                if (ratings[c.front] === 'easy') totalMastered += 1;
+                else if (ratings[c.front] === 'good') totalMastered += 0.5;
+            });
+            const percent = Math.round((totalMastered / deck.length) * 100);
+            masteryEl.innerText = `MASTERY: ${percent}%`;
+
+            // Reset flip state when card changes
+            if (isFlipped) {
+                flipCard();
+            }
+        }
+
+        function flipCard() {
+            const inner = document.getElementById('flashcard-inner');
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                inner.classList.add('rotate-y-180');
+            } else {
+                inner.classList.remove('rotate-y-180');
+            }
+        }
+
+        function nextCard() {
+            const deck = DECKS[currentDeckKey];
+            if (!deck || deck.length === 0) return;
+            currentCardIndex = (currentCardIndex + 1) % deck.length;
+            updateCardDisplay();
+        }
+
+        function prevCard() {
+            const deck = DECKS[currentDeckKey];
+            if (!deck || deck.length === 0) return;
+            currentCardIndex = (currentCardIndex - 1 + deck.length) % deck.length;
+            updateCardDisplay();
+        }
+
+        function rateCard(level) {
+            const deck = DECKS[currentDeckKey];
+            if (!deck || deck.length === 0) return;
+            const card = deck[currentCardIndex];
+            ratings[card.front] = level;
+            showToast(`Rated as ${level.toUpperCase()}`);
+            nextCard();
+        }
+
+        function changeDeck() {
+            currentDeckKey = document.getElementById('deck-select').value;
+            currentCardIndex = 0;
+            updateCardDisplay();
+        }
+
+        function toggleCardCreator() {
+            const creator = document.getElementById('card-creator');
+            creator.classList.toggle('hidden');
+        }
+
+        function saveCustomCard() {
+            const front = document.getElementById('new-card-front').value.trim();
+            const back = document.getElementById('new-card-back').value.trim();
+
+            if (!front || !back) {
+                showToast('Please fill in both sides of the card.');
+                return;
+            }
+
+            DECKS.custom.push({ front, back });
+            document.getElementById('new-card-front').value = '';
+            document.getElementById('new-card-back').value = '';
+            
+            // Switch to custom deck
+            document.getElementById('deck-select').value = 'custom';
+            currentDeckKey = 'custom';
+            currentCardIndex = DECKS.custom.length - 1;
+            
+            toggleCardCreator();
+            updateCardDisplay();
+            showToast('Custom card saved');
+        }
+
+
+        // AUDIO SYNTHESIZER (Web Audio API - No external files required)
+        let audioCtx = null;
+        let brownNoiseNode = null;
+        let toneOsc = null;
+        let masterGain = null;
+        let activeSounds = { brown: false, tone: false };
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+                masterGain = audioCtx.createGain();
+                masterGain.gain.value = 0.5;
+                masterGain.connect(audioCtx.destination);
+            }
+        }
+
+        function toggleSound(type) {
+            initAudio();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            if (type === 'brown') {
+                if (activeSounds.brown) {
+                    stopBrownNoise();
+                    document.getElementById('btn-sound-brown').innerText = 'Play';
+                    document.getElementById('btn-sound-brown').className = 'px-3 py-1.5 bg-white border border-nyt-darkBorder text-xs font-bold uppercase hover:bg-neutral-100';
+                    activeSounds.brown = false;
+                } else {
+                    startBrownNoise();
+                    document.getElementById('btn-sound-brown').innerText = 'Stop';
+                    document.getElementById('btn-sound-brown').className = 'px-3 py-1.5 bg-nyt-text text-white text-xs font-bold uppercase';
+                    activeSounds.brown = true;
+                }
+            } else if (type === 'tone') {
+                if (activeSounds.tone) {
+                    stopTone();
+                    document.getElementById('btn-sound-tone').innerText = 'Play';
+                    document.getElementById('btn-sound-tone').className = 'px-3 py-1.5 bg-white border border-nyt-darkBorder text-xs font-bold uppercase hover:bg-neutral-100';
+                    activeSounds.tone = false;
+                } else {
+                    startTone();
+                    document.getElementById('btn-sound-tone').innerText = 'Stop';
+                    document.getElementById('btn-sound-tone').className = 'px-3 py-1.5 bg-nyt-text text-white text-xs font-bold uppercase';
+                    activeSounds.tone = true;
+                }
+            }
+        }
+
+        function startBrownNoise() {
+            const bufferSize = audioCtx.sampleRate * 2;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            let lastOut = 0.0;
+            
+            for (let i = 0; i < bufferSize; i++) {
+                const white = Math.random() * 2 - 1;
+                data[i] = (lastOut + (0.02 * white)) / 1.02;
+                lastOut = data[i];
+                data[i] *= 3.5; // Gain compensation
+            }
+
+            brownNoiseNode = audioCtx.createBufferSource();
+            brownNoiseNode.buffer = buffer;
+            brownNoiseNode.loop = true;
+            brownNoiseNode.connect(masterGain);
+            brownNoiseNode.start();
+        }
+
+        function stopBrownNoise() {
+            if (brownNoiseNode) {
+                brownNoiseNode.stop();
+                brownNoiseNode.disconnect();
+                brownNoiseNode = null;
+            }
+        }
+
+        function startTone() {
+            toneOsc = audioCtx.createOscillator();
+            const toneGain = audioCtx.createGain();
+            toneOsc.type = 'sine';
+            toneOsc.frequency.setValueAtTime(432, audioCtx.currentTime); // 432 Hz calming tuning
+            toneGain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+
+            toneOsc.connect(toneGain);
+            toneGain.connect(masterGain);
+            toneOsc.start();
+        }
+
+        function stopTone() {
+            if (toneOsc) {
+                toneOsc.stop();
+                toneOsc.disconnect();
+                toneOsc = null;
+            }
+        }
+
+        function updateVolume(val) {
+            document.getElementById('volume-val').innerText = Math.round(val * 100) + '%';
+            if (masterGain) {
+                masterGain.gain.value = parseFloat(val);
+            }
+        }
+
+
+        // TIMER LOGIC
+        let timerSeconds = 25 * 60;
+        let timerInterval = null;
+        let isRunning = false;
+        let currentMode = 'pomodoro';
+
+        const MODES = {
+            pomodoro: 25 * 60,
+            short: 5 * 60,
+            long: 15 * 60
+        };
+
+        function setTimerMode(mode) {
+            currentMode = mode;
+            clearInterval(timerInterval);
+            isRunning = false;
+            document.getElementById('start-btn').innerText = 'Start Timer';
+            
+            // Mode buttons styling
+            ['pomodoro', 'short', 'long'].forEach(m => {
+                const btn = document.getElementById(`mode-${m}`);
+                if (m === mode) {
+                    btn.className = "px-3 py-1.5 bg-nyt-text text-white";
+                } else {
+                    btn.className = "px-3 py-1.5 bg-white border border-nyt-border text-nyt-text";
+                }
+            });
+
+            timerSeconds = MODES[mode];
+            updateTimerDisplay();
+
+            const statusText = {
+                pomodoro: "Ready to enter deep work session.",
+                short: "Time for a brief rest.",
+                long: "Extended break. Stretch and recharge."
+            };
+            document.getElementById('timer-status').innerText = statusText[mode];
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            const formatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            document.getElementById('timer-display').innerText = formatted;
+        }
+
+        function toggleTimer() {
+            if (isRunning) {
+                clearInterval(timerInterval);
+                isRunning = false;
+                document.getElementById('start-btn').innerText = 'Resume';
+            } else {
+                isRunning = true;
+                document.getElementById('start-btn').innerText = 'Pause';
+                timerInterval = setInterval(() => {
+                    if (timerSeconds > 0) {
+                        timerSeconds--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isRunning = false;
+                        showToast('Session complete!');
+                        document.getElementById('start-btn').innerText = 'Start Timer';
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            timerSeconds = MODES[currentMode];
+            updateTimerDisplay();
+            document.getElementById('start-btn').innerText = 'Start Timer';
+        }
+
+        // TASK CHECKLIST LOGIC
+        const tasks = ["Review references for methodology chapter", "Complete 15-minute Active Recall round"];
+
+        function renderTasks() {
+            const list = document.getElementById('task-list');
+            list.innerHTML = tasks.map((t, idx) => `
+                <li class="flex items-center justify-between p-2 border border-nyt-border bg-nyt-bg">
+                    <label class="flex items-center gap-2 cursor-pointer flex-1">
+                        <input type="checkbox" class="accent-black" onchange="this.nextElementSibling.classList.toggle('line-through')">
+                        <span>${t}</span>
+                    </label>
+                    <button onclick="removeTask(${idx})" class="text-nyt-muted hover:text-black">
+                        <i class="fa-solid fa-trash-can text-[11px]"></i>
+                    </button>
+                </li>
+            `).join('');
+        }
+
+        function addTask() {
+            const input = document.getElementById('task-input');
+            const val = input.value.trim();
+            if (val) {
+                tasks.push(val);
+                input.value = '';
+                renderTasks();
+            }
+        }
+
+        function removeTask(index) {
+            tasks.splice(index, 1);
+            renderTasks();
+        }
+
+        window.onload = function() {
+            generateLiveCitation();
+            updateCardDisplay();
+            renderTasks();
+
+            // Set dynamic formatted date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date().toLocaleDateString('en-US', options);
+            document.getElementById('current-date').innerText = today.toUpperCase();
+        };
+    </script>
+</body>
+</html>
